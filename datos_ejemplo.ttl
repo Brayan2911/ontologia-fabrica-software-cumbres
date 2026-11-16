@@ -1,0 +1,144 @@
+@prefix :     <http://example.org/cumbres/fabrica#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+<http://example.org/cumbres/fabrica/datos> a owl:Ontology ;
+    owl:imports <http://example.org/cumbres/fabrica> ;
+    rdfs:comment "Instancias de prueba para validar la ontología de la Fábrica de Software."@es .
+
+# --- Ambientes (3) ---
+:Amb_Desarrollo a :Ambiente ; :nombre "Desarrollo" .
+:Amb_Pruebas    a :Ambiente ; :nombre "Pruebas" .
+:Amb_Produccion a :Ambiente ; :nombre "Produccion" .
+
+# --- Desarrolladores (4) ---
+:Dev_Valeria a :Desarrollador ; :nombre "Valeria Mendoza" ; :correoElectronico "vmendoza@cumbres.edu.mx" .
+:Dev_Carlos  a :Desarrollador ; :nombre "Carlos Ruiz"     ; :correoElectronico "cruiz@cumbres.edu.mx" .
+:Dev_Sofia   a :Desarrollador ; :nombre "Sofía Navarro"   ; :correoElectronico "snavarro@cumbres.edu.mx" .
+:Dev_Diego   a :Desarrollador ; :nombre "Diego Ortega"    ; :correoElectronico "dortega@cumbres.edu.mx" .
+
+# --- Proyectos (4) y Repositorios (4) ---
+:Proj_Becas a :ProyectoSoftware ;
+    :nombre "Sistema de Becas" ;
+    :tieneRepositorio :Repo_Becas ;
+    :dependeDe :Lib_Log4j , :Lib_SpringWeb .
+
+:Proj_ControlEscolar a :ProyectoSoftware ;
+    :nombre "Control Escolar Web" ;
+    :tieneRepositorio :Repo_ControlEscolar ;
+    :dependeDe :Lib_Log4j , :Lib_Axios .
+
+:Proj_Biblioteca a :ProyectoSoftware ;
+    :nombre "Portal de Biblioteca" ;
+    :tieneRepositorio :Repo_Biblioteca ;
+    :dependeDe :Lib_Axios .
+
+:Proj_Tutorias a :ProyectoSoftware ;
+    :nombre "Módulo de Tutorías" ;
+    :tieneRepositorio :Repo_Tutorias ;
+    :dependeDe :Lib_SpringWeb .
+
+:Repo_Becas          a :RepositorioGit ; :nombre "repo-sistema-becas"   ; :urlRepositorio "https://git.cumbres.edu.mx/fabrica/becas"^^xsd:anyURI .
+:Repo_ControlEscolar a :RepositorioGit ; :nombre "repo-control-escolar" ; :urlRepositorio "https://git.cumbres.edu.mx/fabrica/escolar"^^xsd:anyURI .
+:Repo_Biblioteca     a :RepositorioGit ; :nombre "repo-biblioteca"      ; :urlRepositorio "https://git.cumbres.edu.mx/fabrica/biblioteca"^^xsd:anyURI .
+:Repo_Tutorias       a :RepositorioGit ; :nombre "repo-tutorias"        ; :urlRepositorio "https://git.cumbres.edu.mx/fabrica/tutorias"^^xsd:anyURI .
+
+:Dev_Valeria :responsableDe :Repo_Becas , :Repo_Tutorias .
+:Dev_Carlos  :responsableDe :Repo_ControlEscolar .
+:Dev_Sofia   :responsableDe :Repo_Biblioteca .
+
+# --- Bibliotecas (3) y Vulnerabilidades (2) ---
+:Lib_Log4j     a :Biblioteca ; :nombre "Apache Log4j 2.14.1" ; :tieneVulnerabilidad :Vuln_Log4Shell .
+:Lib_SpringWeb a :Biblioteca ; :nombre "Spring Web 5.3.18"   ; :tieneVulnerabilidad :Vuln_Spring4Shell .
+:Lib_Axios     a :Biblioteca ; :nombre "Axios 1.6.0" .
+
+:Vuln_Log4Shell    a :Vulnerabilidad ; :nombre "Log4Shell"    ; :codigoCVE "CVE-2021-44228" ; :severidad "Critica" .
+:Vuln_Spring4Shell a :Vulnerabilidad ; :nombre "Spring4Shell" ; :codigoCVE "CVE-2022-22965" ; :severidad "Alta" .
+
+# --- Sprints (2) ---
+:Sprint_4 a :Sprint ; :nombre "Sprint 4" ; :numeroSprint 4 .
+:Sprint_5 a :Sprint ; :nombre "Sprint 5" ; :numeroSprint 5 .
+
+# --- Historias de Usuario (4) y Pruebas Automatizadas (2) ---
+:HU_501 a :HistoriaUsuario ;
+    :nombre "Cálculo automático de promedio para beca" ;
+    :perteneceAProyecto :Proj_Becas ;
+    :asignadaASprint :Sprint_5 ;
+    :validadaPor :Test_501 .
+
+:HU_502 a :HistoriaUsuario ;
+    :nombre "Carga de comprobante de ingresos en PDF" ;
+    :perteneceAProyecto :Proj_Becas ;
+    :asignadaASprint :Sprint_5 .
+
+:HU_503 a :HistoriaUsuario ;
+    :nombre "Generación de kardex digital firmado" ;
+    :perteneceAProyecto :Proj_ControlEscolar ;
+    :asignadaASprint :Sprint_5 .
+
+:HU_401 a :HistoriaUsuario ;
+    :nombre "Préstamo interbibliotecario en línea" ;
+    :perteneceAProyecto :Proj_Biblioteca ;
+    :asignadaASprint :Sprint_4 ;
+    :validadaPor :Test_401 .
+
+:Test_501 a :PruebaAutomatizada ; :nombre "test_calculo_promedio_beca" .
+:Test_401 a :PruebaAutomatizada ; :nombre "test_prestamo_interbibliotecario" .
+
+# --- Defectos (3) ---
+:Bug_01 a :Defecto ;
+    :nombre "Error 500 al subir PDF mayor a 5MB" ;
+    :severidad "Critica" ;
+    :estadoDefecto "Abierto" ;
+    :perteneceAProyecto :Proj_Becas ;
+    :asignadoADesarrollador :Dev_Valeria ;
+    :historiaOriginadora :HU_502 .
+
+:Bug_02 a :Defecto ;
+    :nombre "Fallo de concurrencia en inscripción de grupos" ;
+    :severidad "Critica" ;
+    :estadoDefecto "Abierto" ;
+    :perteneceAProyecto :Proj_ControlEscolar ;
+    :asignadoADesarrollador :Dev_Carlos .
+
+:Bug_03 a :Defecto ;
+    :nombre "Alineación incorrecta en botón de búsqueda" ;
+    :severidad "Baja" ;
+    :estadoDefecto "Cerrado" ;
+    :perteneceAProyecto :Proj_Biblioteca ;
+    :asignadoADesarrollador :Dev_Sofia .
+
+# --- Despliegues (4) ---
+:Deploy_01 a :Despliegue ;
+    :perteneceAProyecto :Proj_Becas ;
+    :desplegadoEn :Amb_Produccion ;
+    :versionDesplegada "v2.4.1" ;
+    :estadoDespliegue "Exitoso" ;
+    :fechaDespliegue "2026-11-10T18:30:00"^^xsd:dateTime ;
+    :ejecutadoPor :Dev_Valeria .
+
+:Deploy_02 a :Despliegue ;
+    :perteneceAProyecto :Proj_ControlEscolar ;
+    :desplegadoEn :Amb_Produccion ;
+    :versionDesplegada "v5.1.0" ;
+    :estadoDespliegue "Exitoso" ;
+    :fechaDespliegue "2026-11-05T14:00:00"^^xsd:dateTime ;
+    :ejecutadoPor :Dev_Carlos .
+
+:Deploy_03 a :Despliegue ;
+    :perteneceAProyecto :Proj_Biblioteca ;
+    :desplegadoEn :Amb_Produccion ;
+    :versionDesplegada "v1.9.3" ;
+    :estadoDespliegue "Fallido" ;
+    :fechaDespliegue "2026-11-12T22:15:00"^^xsd:dateTime ;
+    :ejecutadoPor :Dev_Sofia .
+
+:Deploy_04 a :Despliegue ;
+    :perteneceAProyecto :Proj_Tutorias ;
+    :desplegadoEn :Amb_Pruebas ;
+    :versionDesplegada "v1.2.0-rc1" ;
+    :estadoDespliegue "Fallido" ;
+    :fechaDespliegue "2026-10-28T11:45:00"^^xsd:dateTime ;
+    :ejecutadoPor :Dev_Diego .
