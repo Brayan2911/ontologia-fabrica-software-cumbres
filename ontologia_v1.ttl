@@ -1,0 +1,225 @@
+@prefix :      <http://example.org/cumbres/fabrica#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:   <http://purl.org/dc/terms/> .
+@prefix doap:  <http://usefulinc.com/ns/doap#> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix prov:  <http://www.w3.org/ns/prov#> .
+
+<http://example.org/cumbres/fabrica> a owl:Ontology ;
+    dct:title "Ontología de la Fábrica de Software del Instituto Tecnológico Cumbres"@es ;
+    dct:creator "Equipo Integrador - Ingeniería en TIC"@es ;
+    owl:versionInfo "1.0" ;
+    rdfs:comment "Modelo semántico para trazabilidad de proyectos, sprints, historias de usuario, pruebas, defectos, dependencias y despliegues."@es .
+
+#################################################################
+#    Clases
+#################################################################
+
+:ProyectoSoftware a owl:Class ;
+    rdfs:subClassOf doap:Project ;
+    rdfs:label "Proyecto de Software"@es ;
+    rdfs:comment "Sistema o aplicación desarrollada y mantenida por la célula de desarrollo del Instituto."@es .
+
+:RepositorioGit a owl:Class ;
+    rdfs:subClassOf doap:Repository ;
+    rdfs:label "Repositorio Git"@es ;
+    rdfs:comment "Almacén de control de versiones asociado a un proyecto institucional."@es .
+
+:Desarrollador a owl:Class ;
+    rdfs:subClassOf foaf:Person ;
+    rdfs:label "Desarrollador"@es ;
+    rdfs:comment "Integrante técnico de la célula responsable de repositorios, despliegues o resolución de defectos."@es .
+
+:ArtefactoAgil a owl:Class ;
+    rdfs:label "Artefacto Ágil"@es ;
+    rdfs:comment "Elemento de planificación y gestión bajo el marco de trabajo Scrum."@es .
+
+:Sprint a owl:Class ;
+    rdfs:subClassOf :ArtefactoAgil ;
+    rdfs:label "Sprint"@es ;
+    rdfs:comment "Iteración de desarrollo con duración fija de dos semanas."@es .
+
+:HistoriaUsuario a owl:Class ;
+    rdfs:subClassOf :ArtefactoAgil ;
+    rdfs:label "Historia de Usuario"@es ;
+    rdfs:comment "Requerimiento funcional descrito desde la perspectiva del usuario del sistema."@es .
+
+:ArtefactoCalidad a owl:Class ;
+    rdfs:label "Artefacto de Calidad"@es ;
+    rdfs:comment "Elemento vinculado a la verificación y control de defectos del software."@es .
+
+:PruebaAutomatizada a owl:Class ;
+    rdfs:subClassOf :ArtefactoCalidad ;
+    rdfs:label "Prueba Automatizada"@es ;
+    rdfs:comment "Caso de prueba ejecutable automáticamente para validar una historia de usuario."@es .
+
+:Defecto a owl:Class ;
+    rdfs:subClassOf :ArtefactoCalidad ;
+    rdfs:label "Defecto"@es ;
+    rdfs:comment "Incidencia o falla detectada en el software que requiere corrección."@es .
+
+:Biblioteca a owl:Class ;
+    rdfs:label "Biblioteca"@es ;
+    rdfs:comment "Dependencia o paquete externo reutilizado por uno o más proyectos."@es .
+
+:Vulnerabilidad a owl:Class ;
+    rdfs:label "Vulnerabilidad"@es ;
+    rdfs:comment "Debilidad de seguridad conocida y catalogada que afecta a una biblioteca."@es .
+
+:Despliegue a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "Despliegue"@es ;
+    rdfs:comment "Evento de liberación e instalación de una versión de proyecto en un ambiente."@es .
+
+:Ambiente a owl:Class ;
+    rdfs:label "Ambiente"@es ;
+    rdfs:comment "Entorno operativo de ejecución: Desarrollo, Pruebas o Producción."@es .
+
+:HistoriaSinPruebas a owl:Class ;
+    owl:equivalentClass [
+        a owl:Class ;
+        owl:intersectionOf (
+            :HistoriaUsuario
+            [ a owl:Restriction ;
+              owl:onProperty :validadaPor ;
+              owl:cardinality "0"^^xsd:nonNegativeInteger
+            ]
+        )
+    ] ;
+    rdfs:label "Historia de Usuario Sin Pruebas"@es ;
+    rdfs:comment "Clase definida inferida automáticamente por HermiT para historias sin pruebas automatizadas asociadas."@es .
+
+#################################################################
+#    Propiedades de Objeto
+#################################################################
+
+:tieneRepositorio a owl:ObjectProperty ;
+    rdfs:domain :ProyectoSoftware ;
+    rdfs:range :RepositorioGit ;
+    rdfs:label "tiene repositorio"@es ;
+    rdfs:comment "Vincula un proyecto de software con su repositorio Git principal."@es .
+
+:responsableDe a owl:ObjectProperty ;
+    rdfs:domain :Desarrollador ;
+    rdfs:range :RepositorioGit ;
+    rdfs:label "responsable de"@es ;
+    rdfs:comment "Indica qué desarrollador es responsable técnico de un repositorio Git."@es .
+
+:perteneceAProyecto a owl:ObjectProperty ;
+    rdfs:range :ProyectoSoftware ;
+    rdfs:label "pertenece a proyecto"@es ;
+    rdfs:comment "Asocia una historia de usuario, defecto o despliegue con su proyecto correspondiente."@es .
+
+:asignadaASprint a owl:ObjectProperty ;
+    rdfs:domain :HistoriaUsuario ;
+    rdfs:range :Sprint ;
+    rdfs:label "asignada a sprint"@es ;
+    rdfs:comment "Indica en qué sprint fue planificada o ejecutada una historia de usuario."@es .
+
+:validadaPor a owl:ObjectProperty ;
+    rdfs:domain :HistoriaUsuario ;
+    rdfs:range :PruebaAutomatizada ;
+    rdfs:label "validada por"@es ;
+    rdfs:comment "Relaciona una historia de usuario con las pruebas automatizadas que la verifican."@es .
+
+:dependeDe a owl:ObjectProperty ;
+    rdfs:domain :ProyectoSoftware ;
+    rdfs:range :Biblioteca ;
+    rdfs:label "depende de"@es ;
+    rdfs:comment "Indica que un proyecto utiliza una biblioteca externa como dependencia."@es .
+
+:tieneVulnerabilidad a owl:ObjectProperty ;
+    rdfs:domain :Biblioteca ;
+    rdfs:range :Vulnerabilidad ;
+    rdfs:label "tiene vulnerabilidad"@es ;
+    rdfs:comment "Asocia una biblioteca con una vulnerabilidad de seguridad conocida."@es .
+
+:desplegadoEn a owl:ObjectProperty ;
+    rdfs:domain :Despliegue ;
+    rdfs:range :Ambiente ;
+    rdfs:label "desplegado en"@es ;
+    rdfs:comment "Indica el ambiente destino en el que se ejecutó un despliegue."@es .
+
+:ejecutadoPor a owl:ObjectProperty ;
+    rdfs:subPropertyOf prov:wasAssociatedWith ;
+    rdfs:domain :Despliegue ;
+    rdfs:range :Desarrollador ;
+    rdfs:label "ejecutado por"@es ;
+    rdfs:comment "Identifica al desarrollador responsable de ejecutar o aprobar el despliegue."@es .
+
+:asignadoADesarrollador a owl:ObjectProperty ;
+    rdfs:domain :Defecto ;
+    rdfs:range :Desarrollador ;
+    rdfs:label "asignado a desarrollador"@es ;
+    rdfs:comment "Vincula un defecto con el desarrollador encargado de resolverlo."@es .
+
+:historiaOriginadora a owl:ObjectProperty ;
+    rdfs:domain :Defecto ;
+    rdfs:range :HistoriaUsuario ;
+    rdfs:label "historia originadora"@es ;
+    rdfs:comment "Relaciona un defecto con la historia de usuario donde se introdujo o detectó."@es .
+
+#################################################################
+#    Propiedades de Datos
+#################################################################
+
+:nombre a owl:DatatypeProperty ;
+    rdfs:range xsd:string ;
+    rdfs:label "nombre"@es ;
+    rdfs:comment "Nombre legible del recurso, proyecto, persona o componente."@es .
+
+:numeroSprint a owl:DatatypeProperty ;
+    rdfs:domain :Sprint ;
+    rdfs:range xsd:integer ;
+    rdfs:label "número de sprint"@es ;
+    rdfs:comment "Número secuencial que identifica al sprint."@es .
+
+:severidad a owl:DatatypeProperty ;
+    rdfs:range xsd:string ;
+    rdfs:label "severidad"@es ;
+    rdfs:comment "Nivel de impacto de un defecto o vulnerabilidad (Critica, Alta, Media, Baja)."@es .
+
+:estadoDefecto a owl:DatatypeProperty ;
+    rdfs:domain :Defecto ;
+    rdfs:range xsd:string ;
+    rdfs:label "estado del defecto"@es ;
+    rdfs:comment "Situación actual del defecto (Abierto, EnProgreso, Cerrado)."@es .
+
+:codigoCVE a owl:DatatypeProperty ;
+    rdfs:domain :Vulnerabilidad ;
+    rdfs:range xsd:string ;
+    rdfs:label "código CVE"@es ;
+    rdfs:comment "Identificador estándar internacional de la vulnerabilidad."@es .
+
+:versionDesplegada a owl:DatatypeProperty ;
+    rdfs:domain :Despliegue ;
+    rdfs:range xsd:string ;
+    rdfs:label "versión desplegada"@es ;
+    rdfs:comment "Etiqueta de versión semántica instalada en el despliegue."@es .
+
+:estadoDespliegue a owl:DatatypeProperty ;
+    rdfs:domain :Despliegue ;
+    rdfs:range xsd:string ;
+    rdfs:label "estado del despliegue"@es ;
+    rdfs:comment "Resultado del proceso de despliegue (Exitoso, Fallido)."@es .
+
+:fechaDespliegue a owl:DatatypeProperty ;
+    rdfs:domain :Despliegue ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "fecha de despliegue"@es ;
+    rdfs:comment "Marca temporal ISO-8601 en la que ocurrió el despliegue."@es .
+
+:urlRepositorio a owl:DatatypeProperty ;
+    rdfs:domain :RepositorioGit ;
+    rdfs:range xsd:anyURI ;
+    rdfs:label "URL del repositorio"@es ;
+    rdfs:comment "Dirección web del repositorio en el servidor Git institucional."@es .
+
+:correoElectronico a owl:DatatypeProperty ;
+    rdfs:domain :Desarrollador ;
+    rdfs:range xsd:string ;
+    rdfs:label "correo electrónico"@es ;
+    rdfs:comment "Dirección de correo institucional del desarrollador."@es .
