@@ -1,0 +1,89 @@
+PREFIX :    <http://example.org/cumbres/fabrica#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+# CQ1: ¿Qué historias de usuario del sprint 5 no tienen pruebas asociadas?
+SELECT ?historia ?nombreHistoria ?proyecto WHERE {
+  ?historia a :HistoriaUsuario ;
+            :nombre ?nombreHistoria ;
+            :asignadaASprint ?sprint ;
+            :perteneceAProyecto ?proj .
+  ?sprint :numeroSprint 5 .
+  ?proj :nombre ?proyecto .
+  FILTER NOT EXISTS { ?historia :validadaPor ?prueba }
+}
+# Resultado:
+# :HU_502 | "Carga de comprobante de ingresos en PDF" | "Sistema de Becas"
+# :HU_503 | "Generación de kardex digital firmado"    | "Control Escolar Web"
+
+# -------------------------------------------------------------------------
+
+# CQ2: ¿Qué proyectos están desplegados hoy en producción y en qué versión?
+SELECT ?proyecto ?version ?fecha WHERE {
+  ?deploy a :Despliegue ;
+          :perteneceAProyecto ?proj ;
+          :desplegadoEn :Amb_Produccion ;
+          :estadoDespliegue "Exitoso" ;
+          :versionDesplegada ?version ;
+          :fechaDespliegue ?fecha .
+  ?proj :nombre ?proyecto .
+}
+# Resultado:
+# "Sistema de Becas"    | "v2.4.1" | 2026-11-10T18:30:00
+# "Control Escolar Web" | "v5.1.0" | 2026-11-05T14:00:00
+
+# -------------------------------------------------------------------------
+
+# CQ3: ¿Quién es responsable del repositorio del sistema de becas?
+SELECT ?responsable ?correo ?repositorio WHERE {
+  :Proj_Becas :tieneRepositorio ?repo .
+  ?repo :nombre ?repositorio .
+  ?dev :responsableDe ?repo ;
+       :nombre ?responsable ;
+       :correoElectronico ?correo .
+}
+# Resultado:
+# "Valeria Mendoza" | "vmendoza@cumbres.edu.mx" | "repo-sistema-becas"
+
+# -------------------------------------------------------------------------
+
+# CQ4: ¿Qué defectos críticos siguen abiertos, por proyecto?
+SELECT ?proyecto ?defecto ?descripcion WHERE {
+  ?defecto a :Defecto ;
+           :nombre ?descripcion ;
+           :severidad "Critica" ;
+           :estadoDefecto "Abierto" ;
+           :perteneceAProyecto ?proj .
+  ?proj :nombre ?proyecto .
+}
+# Resultado:
+# "Sistema de Becas"    | :Bug_01 | "Error 500 al subir PDF mayor a 5MB"
+# "Control Escolar Web" | :Bug_02 | "Fallo de concurrencia en inscripción de grupos"
+
+# -------------------------------------------------------------------------
+
+# CQ5: ¿Qué proyectos dependen de la biblioteca X (Log4j), que tiene una vulnerabilidad conocida?
+SELECT ?proyecto ?biblioteca ?cve ?severidad WHERE {
+  ?proj a :ProyectoSoftware ;
+        :nombre ?proyecto ;
+        :dependeDe ?lib .
+  ?lib :nombre ?biblioteca ;
+       :tieneVulnerabilidad ?vuln .
+  ?vuln :codigoCVE ?cve ;
+        :severidad ?severidad .
+  FILTER(CONTAINS(LCASE(?biblioteca), "log4j"))
+}
+# Resultado:
+# "Sistema de Becas"    | "Apache Log4j 2.14.1" | "CVE-2021-44228" | "Critica"
+# "Control Escolar Web" | "Apache Log4j 2.14.1" | "CVE-2021-44228" | "Critica"
+
+# -------------------------------------------------------------------------
+
+# CQ6: ¿Cuántos despliegues fallaron en el último mes?
+SELECT (COUNT(?deploy) AS ?desplieguesFallidos) WHERE {
+  ?deploy a :Despliegue ;
+          :estadoDespliegue "Fallido" ;
+          :fechaDespliegue ?fecha .
+  FILTER(?fecha >= "2026-10-16T00:00:00"^^xsd:dateTime && ?fecha <= "2026-11-16T23:59:59"^^xsd:dateTime)
+}
+# Resultado:
+# ?desplieguesFallidos = 2
